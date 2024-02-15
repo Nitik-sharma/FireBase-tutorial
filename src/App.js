@@ -1,39 +1,56 @@
 import "./App.css";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import SignIn from "./Page/SignIn";
-import Sign from "./Sign";
+import {
+  getFirestore,
+  addDoc,
+  collection,
+  getDoc,
+  doc,
+  getDocs,
+  where,
+  query,
+} from "firebase/firestore";
 import { app } from "./Firebase/FireStore";
-import { useEffect, useState } from "react";
-
-const auth = getAuth(app);
-
+const firestore = getFirestore(app);
 function App() {
-  const [user, setUser] = useState();
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("Hello", user);
-        setUser(user);
-      } else {
-        console.log("Your are logged out");
-        setUser(null);
-      }
+  const writeData = async () => {
+    const result = await addDoc(collection(firestore, "cities"), {
+      name: "Bhiwani",
+      pin: "127031",
+      lan: 20,
+      long: 340,
     });
-  });
+    console.log(result);
+  };
+  const writeSubData = async () => {
+    const result = await addDoc(
+      collection(firestore, "cities/Qha2lbgJzYPsamu5ivFy/places"),
+      {
+        name: "Collage Govt. Park",
+        about: "Very beautiful park",
+        date: Date.now(),
+      }
+    );
+    console.log("result1-->", result);
+  };
 
+  const readData = async () => {
+    const ref = doc(firestore, "users", "9DwhSwygF9QO5lb83Ga6");
+    const result = await getDoc(ref);
+    console.log("Data-->", result.data());
+  };
+  const getQueryData = async () => {
+    const ref = collection(firestore, "users");
+    const q = query(ref, where("isMale", "==", true));
+    const snapShot = await getDocs(q);
+    snapShot.forEach((data) => console.log("Data by Query-->", data.data()));
+  };
   return (
     <div className="App">
-      <h1>Firebase</h1>
-      {user === null ? (
-        <div>
-          <Sign />
-          <SignIn />
-        </div>
-      ) : (
-        <div>
-          <h1>hello:{user}</h1>
-        </div>
-      )}
+      <h1>Fireebase </h1>
+      <button onClick={writeData}>Put Data</button>
+      <button onClick={writeSubData}>Put Sub Data </button>
+      <button onClick={readData}>Get Data</button>
+      <button onClick={getQueryData}>Get Data By Query</button>
     </div>
   );
 }
